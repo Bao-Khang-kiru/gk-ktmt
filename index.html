@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trắc Nghiệm Kiến Trúc Máy Tính - Ôn Thi Giữa Kỳ</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="logo-group" onclick="app.showDashboard()">
+        <div class="logo-icon">💻</div>
+        <div class="logo-text">
+          <h1>KTMT Quiz Master</h1>
+          <span>Kiến Trúc Máy Tính - Ôn Thi Giữa Kỳ 2023</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn-icon badge-counter" title="Câu hỏi đã đánh dấu" onclick="app.switchTab('bookmarks')">
+          ⭐
+          <span class="count" id="header-bookmark-count">0</span>
+        </button>
+        <button class="btn-icon badge-counter" title="Câu làm sai cần ôn lại" onclick="app.switchTab('mistakes')">
+          ❌
+          <span class="count" id="header-mistakes-count">0</span>
+        </button>
+        <button class="btn-icon" title="Hướng dẫn phím tắt" onclick="app.openShortcutsModal()">
+          ⌨️
+        </button>
+        <button class="btn-icon" id="theme-toggle-btn" title="Chuyển chế độ Sáng / Tối" onclick="app.toggleTheme()">
+          🌙
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Wrapper -->
+  <main class="main-wrapper">
+    <!-- DASHBOARD VIEW -->
+    <div id="dashboard-view">
+      <!-- Hero Card -->
+      <section class="hero-card">
+        <div class="hero-info">
+          <h2>Hệ Thống Trắc Nghiệm Kiến Trúc Máy Tính</h2>
+          <p>Dữ liệu chuẩn từ tài liệu ôn thi giữa kỳ Đại học Cần Thơ (CTU). Hỗ trợ ôn theo từng đề hoặc ôn tổng hợp thông minh.</p>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat-item">
+            <div class="num" id="stat-total-exams">5</div>
+            <div class="lbl">Bộ đề</div>
+          </div>
+          <div class="hero-stat-item">
+            <div class="num" id="stat-total-questions">92</div>
+            <div class="lbl">Câu hỏi</div>
+          </div>
+          <div class="hero-stat-item">
+            <div class="num" style="color: var(--success);" id="stat-accuracy">100%</div>
+            <div class="lbl">Lời giải chi tiết</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Navigation Tabs -->
+      <nav class="tabs-nav">
+        <button class="tab-btn active" data-tab="by-exam" onclick="app.switchTab('by-exam')">
+          📚 Mục 1: Ôn theo đề
+        </button>
+        <button class="tab-btn" data-tab="combined" onclick="app.switchTab('combined')">
+          🎯 Mục 2: Ôn tổng hợp tất cả các đề
+        </button>
+        <button class="tab-btn" data-tab="mistakes" onclick="app.switchTab('mistakes')">
+          🔄 Ôn lại câu sai <span id="tab-mistakes-badge">(0)</span>
+        </button>
+        <button class="tab-btn" data-tab="bookmarks" onclick="app.switchTab('bookmarks')">
+          ⭐ Đã đánh dấu <span id="tab-bookmarks-badge">(0)</span>
+        </button>
+        <button class="tab-btn" data-tab="history" onclick="app.switchTab('history')">
+          📊 Lịch sử thi
+        </button>
+      </nav>
+
+      <!-- TAB 1: ÔN THEO ĐỀ (MỤC 1) -->
+      <div id="tab-by-exam-content" class="tab-pane">
+        <div class="exams-grid" id="exams-container">
+          <!-- Exam cards dynamically rendered here -->
+        </div>
+      </div>
+
+      <!-- TAB 2: ÔN TỔNG HỢP (MỤC 2) -->
+      <div id="tab-combined-content" class="tab-pane" style="display: none;">
+        <div class="combined-setup-card">
+          <h3 class="setup-title">🎯 Cấu hình Ôn tập Tổng hợp Tất cả các đề</h3>
+          <p class="setup-desc">Tạo bài thi hoặc phiên ôn tập ngẫu nhiên từ ngân hàng 92 câu hỏi trắc nghiệm của toàn bộ 5 đề thi.</p>
+
+          <div class="setup-group">
+            <label class="setup-label">1. Chọn số lượng câu hỏi:</label>
+            <div class="chip-options" id="combined-count-chips">
+              <button class="chip-btn" data-count="10" onclick="app.selectCombinedCount(10)">10 câu nhanh</button>
+              <button class="chip-btn active" data-count="20" onclick="app.selectCombinedCount(20)">20 câu tiêu chuẩn</button>
+              <button class="chip-btn" data-count="40" onclick="app.selectCombinedCount(40)">40 câu nâng cao</button>
+              <button class="chip-btn" data-count="92" onclick="app.selectCombinedCount(92)">Toàn bộ 92 câu</button>
+            </div>
+          </div>
+
+          <div class="setup-group">
+            <label class="setup-label">2. Tùy chọn xáo trộn (Thứ tự câu hỏi & đáp án):</label>
+            <div class="radio-card-group">
+              <div class="radio-card active" data-shuffle="all" onclick="app.selectCombinedShuffle('all')">
+                <div class="radio-card-title">🔀 Xáo trộn toàn bộ</div>
+                <div class="radio-card-desc">Xáo trộn ngẫu nhiên cả thứ tự câu hỏi và thứ tự đáp án A/B/C/D mỗi lần làm bài.</div>
+              </div>
+              <div class="radio-card" data-shuffle="questions" onclick="app.selectCombinedShuffle('questions')">
+                <div class="radio-card-title">🔀 Chỉ xáo trộn câu hỏi</div>
+                <div class="radio-card-desc">Xáo trộn thứ tự các câu hỏi, giữ nguyên thứ tự đáp án A/B/C/D.</div>
+              </div>
+              <div class="radio-card" data-shuffle="default" onclick="app.selectCombinedShuffle('default')">
+                <div class="radio-card-title">📋 Thứ tự mặc định</div>
+                <div class="radio-card-desc">Giữ nguyên thứ tự câu hỏi và các phương án từ tài liệu gốc.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="setup-group">
+            <label class="setup-label">3. Chế độ ôn tập:</label>
+            <div class="radio-card-group">
+              <div class="radio-card active" data-mode="study" onclick="app.selectCombinedMode('study')">
+                <div class="radio-card-title">💡 Chế độ Luyện tập</div>
+                <div class="radio-card-desc">Biết ngay kết quả Đúng/Sai và xem lời giải thích chi tiết cặn kẽ ngay khi chọn đáp án.</div>
+              </div>
+              <div class="radio-card" data-mode="exam" onclick="app.selectCombinedMode('exam')">
+                <div class="radio-card-title">⏱️ Chế độ Thi thử</div>
+                <div class="radio-card-desc">Có đồng hồ đếm ngược thời gian, làm xong bấm nộp bài để chấm điểm và phân tích năng lực.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="setup-group">
+            <label class="setup-label">4. Lọc theo chuyên đề kiến thức (Tùy chọn):</label>
+            <div class="category-tags-grid" id="combined-categories-container">
+              <!-- Checkboxes dynamically rendered -->
+            </div>
+          </div>
+
+          <button class="btn-primary" style="width: 100%; padding: 0.85rem; font-size: 1.05rem; margin-top: 1rem;" onclick="app.startCombinedExam()">
+            🚀 Bắt đầu làm bài thi tổng hợp
+          </button>
+        </div>
+      </div>
+
+      <!-- TAB 3: ÔN LẠI CÂU SAI -->
+      <div id="tab-mistakes-content" class="tab-pane" style="display: none;">
+        <div class="combined-setup-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 class="setup-title" style="margin: 0;">🔄 Luyện tập lại các câu đã từng làm sai</h3>
+            <button class="btn-secondary" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;" onclick="app.clearMistakes()">Xóa lịch sử sai</button>
+          </div>
+          <p class="setup-desc">Hệ thống tự động lưu các câu hỏi bạn đã trả lời sai trong các lần làm bài trước để bạn có thể ôn lại và khắc phục điểm yếu.</p>
+          <div id="mistakes-list-container" class="saved-list">
+            <!-- Rendered via JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: CÂU HỎI ĐÃ ĐÁNH DẤU -->
+      <div id="tab-bookmarks-content" class="tab-pane" style="display: none;">
+        <div class="combined-setup-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 class="setup-title" style="margin: 0;">⭐ Các câu hỏi đã đánh dấu lưu ý</h3>
+            <button class="btn-secondary" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;" onclick="app.clearBookmarks()">Bỏ lưu tất cả</button>
+          </div>
+          <p class="setup-desc">Những câu hỏi quan trọng, hay hoặc cần xem lại mà bạn đã gắn cờ trong khi luyện tập.</p>
+          <div id="bookmarks-list-container" class="saved-list">
+            <!-- Rendered via JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 5: LỊCH SỬ THI -->
+      <div id="tab-history-content" class="tab-pane" style="display: none;">
+        <div class="combined-setup-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 class="setup-title" style="margin: 0;">📊 Lịch sử làm bài và Điểm số</h3>
+            <button class="btn-secondary" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;" onclick="app.clearHistory()">Xóa lịch sử</button>
+          </div>
+          <div id="history-list-container" class="saved-list">
+            <!-- Rendered via JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EXAM / QUIZ PLAYING VIEW -->
+    <div id="exam-view" class="exam-container">
+      <!-- Sticky Exam Header -->
+      <div class="exam-header-bar">
+        <div>
+          <button class="btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; margin-bottom: 0.25rem;" onclick="app.confirmExitExam()">
+            ← Thoát về trang chủ
+          </button>
+          <h2 id="exam-title-display" style="font-size: 1.15rem; font-weight: 700; line-height: 1.3;">Tên Đề Thi</h2>
+        </div>
+
+        <div class="exam-status-group">
+          <!-- Countdown Timer -->
+          <div class="timer-pill" id="exam-timer-pill">
+            ⏱️ <span id="timer-display">00:00</span>
+          </div>
+
+          <!-- Progress Indicator -->
+          <div class="progress-indicator">
+            <span id="progress-text">Câu 1 / 20</span>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" id="progress-bar-fill"></div>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <button class="btn-primary" style="padding: 0.45rem 1rem; font-size: 0.9rem;" onclick="app.confirmSubmitExam()">
+            Nộp bài ✓
+          </button>
+        </div>
+      </div>
+
+      <!-- Exam Layout -->
+      <div class="exam-layout">
+        <!-- Main Question Area -->
+        <div class="question-column">
+          <div class="question-card" id="current-question-card">
+            <div class="question-header">
+              <div class="question-tags">
+                <span class="badge-tag highlight" id="q-index-badge">Câu 1</span>
+                <span class="badge-tag" id="q-category-badge">Chủ đề</span>
+                <span class="badge-tag" id="q-origin-badge">Đề 1</span>
+              </div>
+              <button class="btn-flag" id="q-flag-btn" onclick="app.toggleCurrentFlag()">
+                <span>🏳️</span> <span id="q-flag-text">Đánh dấu</span>
+              </button>
+            </div>
+
+            <!-- Question Content -->
+            <div class="question-body" id="q-content-display">
+              Nội dung câu hỏi ở đây...
+            </div>
+
+            <!-- Assembly Code (if any) -->
+            <div class="code-container" id="q-code-container" style="display: none;">
+              <pre><code id="q-code-display"></code></pre>
+            </div>
+
+            <!-- Data Table (if any) -->
+            <div id="q-table-container" style="display: none;">
+              <!-- Table rendered via JS -->
+            </div>
+
+            <!-- Options List -->
+            <div class="options-list" id="q-options-container">
+              <!-- Options rendered via JS -->
+            </div>
+
+            <!-- Detailed Explanation (shown in study mode or after submit) -->
+            <div class="explanation-box" id="q-explanation-box">
+              <div class="explanation-title">
+                <span>💡</span> <span>Lời giải chi tiết:</span>
+              </div>
+              <div class="explanation-content" id="q-explanation-text">
+                Giải thích cặn kẽ từng bước...
+              </div>
+            </div>
+
+            <!-- Question Card Footer Navigation -->
+            <div class="question-footer">
+              <div class="nav-btn-group">
+                <button class="btn-secondary" id="btn-prev-question" onclick="app.goToPrevQuestion()">
+                  ← Câu trước
+                </button>
+                <button class="btn-secondary" id="btn-next-question" onclick="app.goToNextQuestion()">
+                  Câu sau →
+                </button>
+              </div>
+
+              <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <span style="font-size: 0.8rem; color: var(--text-muted);">Phím tắt: [1-4] hoặc [A-D] chọn, [←/→] chuyển câu</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Question Palette Sidebar -->
+        <aside class="palette-sidebar">
+          <div class="palette-title">
+            <span>Bảng câu hỏi</span>
+            <span style="font-size: 0.8rem; color: var(--text-muted);" id="palette-count-summary">0/20 đã làm</span>
+          </div>
+
+          <div class="palette-legend">
+            <div class="legend-item"><span class="legend-dot" style="background: var(--primary);"></span> Đã làm</div>
+            <div class="legend-item"><span class="legend-dot" style="background: var(--bg-secondary); border: 1px solid var(--border);"></span> Chưa làm</div>
+            <div class="legend-item"><span class="legend-dot" style="background: var(--warning);"></span> Gắn cờ</div>
+          </div>
+
+          <div class="palette-grid" id="palette-grid-container">
+            <!-- Palette buttons rendered via JS -->
+          </div>
+
+          <div class="palette-sidebar-footer">
+            <button class="btn-primary" style="width: 100%; padding: 0.65rem;" onclick="app.confirmSubmitExam()">
+              Hoàn thành & Nộp bài
+            </button>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL: CÀI ĐẶT TÙY CHỌN CHO TỪNG ĐỀ -->
+  <div class="modal-overlay" id="exam-config-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modal-exam-title">Tùy Chọn Thi</h3>
+        <button class="modal-close" onclick="app.closeModal('exam-config-modal')">&times;</button>
+      </div>
+
+      <div class="setup-group">
+        <label class="setup-label">1. Tùy chọn xáo trộn:</label>
+        <div class="radio-card-group">
+          <div class="radio-card active" data-modal-shuffle="all" onclick="app.selectModalShuffle('all')">
+            <div class="radio-card-title">🔀 Xáo trộn toàn bộ</div>
+            <div class="radio-card-desc">Xáo trộn ngẫu nhiên vị trí câu hỏi và thứ tự đáp án A/B/C/D.</div>
+          </div>
+          <div class="radio-card" data-modal-shuffle="questions" onclick="app.selectModalShuffle('questions')">
+            <div class="radio-card-title">🔀 Chỉ xáo trộn câu hỏi</div>
+            <div class="radio-card-desc">Xáo trộn vị trí câu hỏi, giữ nguyên thứ tự đáp án.</div>
+          </div>
+          <div class="radio-card" data-modal-shuffle="default" onclick="app.selectModalShuffle('default')">
+            <div class="radio-card-title">📋 Thứ tự mặc định</div>
+            <div class="radio-card-desc">Giữ nguyên thứ tự câu hỏi và đáp án gốc từ tài liệu.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="setup-group">
+        <label class="setup-label">2. Chế độ làm bài:</label>
+        <div class="radio-card-group">
+          <div class="radio-card active" data-modal-mode="study" onclick="app.selectModalMode('study')">
+            <div class="radio-card-title">💡 Chế độ Luyện tập</div>
+            <div class="radio-card-desc">Xem đáp án đúng/sai và lời giải thích chi tiết ngay lập tức.</div>
+          </div>
+          <div class="radio-card" data-modal-mode="exam" onclick="app.selectModalMode('exam')">
+            <div class="radio-card-title">⏱️ Chế độ Thi thử</div>
+            <div class="radio-card-desc">Có tính giờ đếm ngược, làm xong mới nộp bài để tính điểm.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="setup-group" id="modal-timer-group">
+        <label class="setup-label">3. Thời gian làm bài:</label>
+        <div class="chip-options" id="modal-timer-chips">
+          <button class="chip-btn active" data-time="auto" onclick="app.selectModalTimer('auto')">Gợi ý theo đề</button>
+          <button class="chip-btn" data-time="15" onclick="app.selectModalTimer(15)">15 phút</button>
+          <button class="chip-btn" data-time="30" onclick="app.selectModalTimer(30)">30 phút</button>
+          <button class="chip-btn" data-time="0" onclick="app.selectModalTimer(0)">Không giới hạn</button>
+        </div>
+      </div>
+
+      <button class="btn-primary" style="width: 100%; padding: 0.75rem; font-size: 1rem; margin-top: 1.25rem;" onclick="app.startConfiguredExam()">
+        🚀 Bắt đầu làm bài
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL: KẾT QUẢ BÀI THI -->
+  <div class="modal-overlay" id="result-modal">
+    <div class="modal-box" style="max-width: 620px;">
+      <div class="modal-header">
+        <h3>Kết Quả Bài Làm</h3>
+        <button class="modal-close" onclick="app.closeModal('result-modal')">&times;</button>
+      </div>
+
+      <div class="result-card">
+        <div class="score-circle">
+          <div class="score-num" id="result-score-10">8.5</div>
+          <div class="score-max">/ 10 điểm</div>
+        </div>
+
+        <div class="result-badge good" id="result-badge-text">
+          🎉 Xuất sắc! Bạn nắm rất vững kiến thức
+        </div>
+
+        <div class="result-metrics">
+          <div class="metric-box">
+            <div class="val" id="result-correct-count">15/17</div>
+            <div class="lbl">Số câu đúng</div>
+          </div>
+          <div class="metric-box">
+            <div class="val" id="result-accuracy-pct">88%</div>
+            <div class="lbl">Độ chính xác</div>
+          </div>
+          <div class="metric-box">
+            <div class="val" id="result-time-taken">12:45</div>
+            <div class="lbl">Thời gian làm</div>
+          </div>
+        </div>
+
+        <!-- Category breakdown -->
+        <div class="category-breakdown" id="result-category-breakdown">
+          <h4>Phân tích theo chuyên đề:</h4>
+          <!-- Rendered via JS -->
+        </div>
+
+        <!-- Action buttons -->
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <button class="btn-primary" style="flex: 1;" onclick="app.reviewExamAnswers()">
+            🔍 Xem lại chi tiết từng câu
+          </button>
+          <button class="btn-secondary" style="flex: 1;" onclick="app.retryCurrentExam()">
+            🔄 Làm lại đề này
+          </button>
+          <button class="btn-secondary" style="width: 100%;" onclick="app.showDashboard()">
+            🏠 Về trang chủ
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PHÍM TẮT TIỆN ÍCH -->
+  <div class="modal-overlay" id="shortcuts-modal">
+    <div class="modal-box" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3>⌨️ Phím Tắt Bàn Phím</h3>
+        <button class="modal-close" onclick="app.closeModal('shortcuts-modal')">&times;</button>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.9rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span>Chọn đáp án A, B, C, D</span>
+          <div><span class="kbd">A</span> <span class="kbd">B</span> <span class="kbd">C</span> <span class="kbd">D</span> hoặc <span class="kbd">1</span> <span class="kbd">2</span> <span class="kbd">3</span> <span class="kbd">4</span></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span>Câu trước / Câu tiếp theo</span>
+          <div><span class="kbd">←</span> <span class="kbd">→</span> hoặc <span class="kbd">J</span> <span class="kbd">K</span></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span>Đánh dấu / Gỡ cờ câu hỏi</span>
+          <span class="kbd">F</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span>Chuyển chế độ Sáng / Tối</span>
+          <span class="kbd">T</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <p>Hệ thống Trắc nghiệm Kiến trúc máy tính &copy; 2026 - Biên soạn từ tài liệu [studocu.com] ôn thi giữa kỳ CTU 2023.</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="quiz_data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
